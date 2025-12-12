@@ -57,12 +57,10 @@ function importFromJsonFile(event) {
   reader.readAsText(event.target.files[0]);
 }
 
-// Fetch quotes from server
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     const data = await response.json();
-
     return data.slice(0, 5).map(item => ({
       text: item.title,
       category: "server"
@@ -73,15 +71,15 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Post a quote to the server
 async function postQuoteToServer(quote) {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(quote)
     });
-
     const result = await response.json();
     return result;
   } catch (error) {
@@ -89,52 +87,32 @@ async function postQuoteToServer(quote) {
   }
 }
 
-// Sync quotes with server
 async function syncQuotes() {
   try {
     const serverQuotes = await fetchQuotesFromServer();
     let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
-    // Conflict resolution: server data takes precedence
     const merged = [...serverQuotes, ...localQuotes];
-
-    // Update local storage
     localStorage.setItem("quotes", JSON.stringify(merged));
-    
-    // Update the quotes array
     quotes = merged;
-
-    // Show notification
-    showNotification("Quotes synced with server! Server data takes precedence.");
+    showNotification("Quotes synced with server!");
   } catch (error) {
     console.error("Sync failed:", error);
-    showNotification("Failed to sync with server.", true);
   }
 }
 
-// Show notification to user
-function showNotification(message, isError = false) {
+function showNotification(message) {
   const notification = document.createElement("div");
   notification.innerText = message;
   notification.style.position = "fixed";
   notification.style.bottom = "20px";
   notification.style.right = "20px";
-  notification.style.backgroundColor = isError ? "#ff6b6b" : "#4CAF50";
+  notification.style.backgroundColor = "#4CAF50";
   notification.style.color = "white";
   notification.style.padding = "15px 20px";
   notification.style.borderRadius = "5px";
-  notification.style.boxShadow = "0 2px 5px rgba(0,0,0,0.2)";
   notification.style.zIndex = "1000";
-
   document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.remove();
-  }, 3000);
+  setTimeout(() => notification.remove(), 3000);
 }
 
-// Periodically sync with server every 30 seconds
 setInterval(syncQuotes, 30000);
-
-// Initial sync on page load
-window.addEventListener('load', syncQuotes);
