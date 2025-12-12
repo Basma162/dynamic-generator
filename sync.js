@@ -18,13 +18,13 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Post local quotes to mock server
-async function postQuotesToServer(localQuotes) {
+// Post a single quote to mock server (for test compatibility)
+async function postQuoteToServer(quote) {
   try {
     const response = await fetch(SERVER_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(localQuotes)
+      body: JSON.stringify(quote)
     });
 
     const result = await response.json();
