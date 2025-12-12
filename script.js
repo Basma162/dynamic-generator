@@ -87,6 +87,7 @@ function fetchQuotesFromServer() {
   });
 }
 
+// Post quote to server using POST method with Content-Type headers
 function postQuoteToServer(quote) {
   return fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
