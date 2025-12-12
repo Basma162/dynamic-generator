@@ -56,3 +56,19 @@ function importFromJsonFile(event) {
 
   reader.readAsText(event.target.files[0]);
 }
+
+// Post a quote to the server
+async function postQuoteToServer(quote) {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(quote)
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error posting to server:", error);
+  }
+}
