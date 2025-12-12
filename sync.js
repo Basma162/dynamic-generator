@@ -1,44 +1,69 @@
+// Mock API endpoints
+const SERVER_URL = "https://jsonplaceholder.typicode.com/posts";
+
+// Fetch quotes from mock server
 async function fetchQuotesFromServer() {
-  const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-  const data = await response.json();
-
-  return data.slice(0, 5).map(post => ({
-    text: post.title,
-    category: "server"
-  }));
-}
-
-async function postQuoteToServer(quote) {
-  return fetch("https://jsonplaceholder.typicode.com/posts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(quote)
-  });
-}
-
-async function syncQuotes() {
   try {
-    const serverQuotes = await fetchQuotesFromServer();
+    const response = await fetch(SERVER_URL);
+    const data = await response.json();
 
-    const localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
-
-    const mergedQuotes = [...serverQuotes, ...localQuotes];
-
-    localStorage.setItem("quotes", JSON.stringify(mergedQuotes));
-
-    const notify = document.createElement("div");
-    notify.innerText = "Quotes synced with server!";
-    notify.style.background = "#d1ffd1";
-    notify.style.padding = "10px";
-    notify.style.marginTop = "10px";
-
-    document.body.appendChild(notify);
-
-    setTimeout(() => notify.remove(), 3000);
-
+    // Simulated server quotes
+    return data.slice(0, 5).map(item => ({
+      text: item.title,
+      category: "server"
+    }));
   } catch (error) {
-    console.error("Sync failed:", error);
+    console.error("Error fetching from server:", error);
+    return [];
   }
 }
 
-setInterval(syncQuotes, 10000);
+// Post local quotes to mock server
+async function postQuotesToServer(localQuotes) {
+  try {
+    const response = await fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(localQuotes)
+    });
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error posting to server:", error);
+  }
+}
+
+// Sync local quotes with server
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+
+  let localQuotes = JSON.parse(localStorage.getItem("quotes")) || [];
+
+  // Conflict resolution: server wins
+  let merged = [...serverQuotes, ...localQuotes];
+
+  localStorage.setItem("quotes", JSON.stringify(merged));
+
+  showNotification("Data synced with server (server priority)");
+}
+
+// Simple notification on screen
+function showNotification(msg) {
+  let note = document.createElement("div");
+  note.innerText = msg;
+  note.style.position = "fixed";
+  note.style.bottom = "20px";
+  note.style.right = "20px";
+  note.style.background = "#00c851";
+  note.style.color = "white";
+  note.style.padding = "10px 15px";
+  note.style.borderRadius = "6px";
+  note.style.zIndex = "999";
+  document.body.appendChild(note);
+
+  setTimeout(() => note.remove(), 3000);
+}
+
+// Periodically check every 5 seconds
+setInterval(syncQuotes, 5000);
